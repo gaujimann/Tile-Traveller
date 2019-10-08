@@ -1,109 +1,97 @@
-#Make function to tell you the valid direction
-#Make function to let you pick a direction
-#Write a code to check your input
-#Run input through the movement function
-#Write code for victiory condition
+NORTH = 'n'
+EAST = 'e'
+SOUTH = 's'
+WEST = 'w'
 
-def dir(x,y,i):
-    if i.lower() == "n":
-        y += 1
-        return(y)
-    elif i.lower() == "s":
-        y -= 1
-        return(y)
-    elif i.lower() == "e":
-        x += 1
-        return(x)
-    elif i.lower() == "w":
-        x -= 1
-        return(x)
+def move(direction, col, row):
+    ''' Returns updated col, row given the direction '''
+    if direction == NORTH:
+        row += 1
+    elif direction == SOUTH:
+        row -= 1
+    elif direction == EAST:
+        col += 1
+    elif direction == WEST:
+        col -= 1
+    return(col, row)    
 
+def is_victory(col, row):
+    ''' Return true is player is in the victory cell '''
+    return col == 3 and row == 1 # (3,1)
 
+def print_directions(directions_str):
+    print("You can travel: ", end='')
+    first = True
+    for ch in directions_str:
+        if not first:
+            print(" or ", end='')
+        if ch == NORTH:
+            print("(N)orth", end='')
+        elif ch == EAST:
+            print("(E)ast", end='')
+        elif ch == SOUTH:
+            print("(S)outh", end='')
+        elif ch == WEST:
+            print("(W)est", end='')
+        first = False
+    print(".")
+        
+def find_directions(col, row):
+    ''' Returns valid directions as a string given the supplied location '''
+    if col == 1 and row == 1:   # (1,1)
+        valid_directions = NORTH
+    elif col == 1 and row == 2: # (1,2)
+        valid_directions = NORTH+EAST+SOUTH
+    elif col == 1 and row == 3: # (1,3)
+        valid_directions = EAST+SOUTH
+    elif col == 2 and row == 1: # (2,1)
+        valid_directions = NORTH
+    elif col == 2 and row == 2: # (2,2)
+        valid_directions = SOUTH+WEST
+    elif col == 2 and row == 3: # (2,3)
+        valid_directions = EAST+WEST
+    elif col == 3 and row == 2: # (3,2)
+        valid_directions = NORTH+SOUTH
+    elif col == 3 and row == 3: # (3,3)
+        valid_directions = SOUTH+WEST
+    return valid_directions
 
-def validdir(x,y):              #make value of invalid directions 0
-    north = 1
-    east = 2
-    south = 3
-    west = 4
-    if x == 1:
-        west = 0
-        if y == 1:
-            east = 0
-            south = 0
-        if y == 3:
-            north = 0
-    if x == 2:
-        if y == 1:
-            east = 0
-            south = 0
-            west = 0
-        if y == 2:
-            north = 0
-            east = 0
-        if y == 3:
-            north = 0
-            south = 0
-    if x == 3:
-        east = 0
-        if y == 1:
-            west = 0
-            south = 0
-        if y == 2:
-            west = 0
-        if y == 3:
-            north = 0
-    return(str(north) + str(east) + str(south) + str(west))   #return a string that is then used to determine the valid directions 
-
-x = 1
-y = 1
-
-while(True):
-    valid = "You can travel: "
-    N = "(N)orth"
-    E = "(E)ast"
-    S = "(S)outh"
-    W = "(W)est"
-    north = bool()
-    east = bool()
-    south = bool()
-    west = bool()
-    for ind, ch in enumerate(validdir(x,y)):
-        if ch == "1":
-            valid = valid + N
-            north = True
-        if ch == "2":
-            if north:
-                valid = valid + " or " + E
-            else:
-                valid += E
-            east = True
-        if ch == "3":
-            if north or east:
-                valid = valid + " or " + S
-            else:
-                valid += S
-            south = True
-        if ch == "4":
-            if north or east or south:
-                valid = valid + " or " + W
-            else:
-                valid += W
-            west = True
+def play_one_move(col, row, valid_directions):
+    ''' Plays one move of the game
+        Return if victory has been obtained and updated col,row '''
+    victory = False
+    direction = input("Direction: ")
+    direction = direction.lower()
     
-    print(valid)
+    if not direction in valid_directions:
+        print("Not a valid direction!")
+    else:
+        col, row = move(direction, col, row)
+        victory = is_victory(col, row)
+    return victory, col, row
 
-    while(True):
-        move = input("Direction: ")
-        d = dir(x,y,move)
-        if (move.lower() == "n" and north) or (move.lower() == "s" and south):
-            y = dir(x,y,move)
-            break
-        elif (move.lower() == "e" and east) or (move.lower() == "w" and west):
-            x = dir(x,y,move)
-            break
-        else:
-            print("Not a valid driection!")
-    
-    if x == 3 and y == 1:
-        print("Victory!")
-        break
+def pull_lever(coins):
+    pull = input("Pull a lever (y/n): ").lower()
+    if pull == "y":
+        coins += 1
+        print("You received 1 coin, your total is now " + str(coins) + ".")
+    return coins
+
+# The main program starts here
+victory = False
+row = 1
+col = 1
+coins = 0
+
+valid_directions = NORTH
+print_directions(valid_directions)
+
+while not victory:
+    victory, col, row = play_one_move(col, row, valid_directions)
+    if victory:
+        print("Victory! Total coins " + str(coins) + ".")
+    else:
+        if (col == 1 and row == 2) or (col == 2 and row == 2) or (col == 2 and row == 3) or (col == 3 and row == 2):
+            coins = pull_lever(coins)
+        valid_directions = find_directions(col, row)
+        print_directions(valid_directions)  
