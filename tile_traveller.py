@@ -77,6 +77,16 @@ def pull_lever(coins):
         print("You received 1 coin, your total is now " + str(coins) + ".")
     return coins
 
+def play():
+    playagain = input("Play again (y/n): ").lower()
+    if playagain == "y":
+        return True
+
+def reset(row = 1, col = 1, coins = 0):
+    valid_directions = NORTH
+    print_directions(valid_directions)
+    return row, col, coins
+
 # The main program starts here
 victory = False
 row = 1
@@ -90,6 +100,9 @@ while not victory:
     victory, col, row = play_one_move(col, row, valid_directions)
     if victory:
         print("Victory! Total coins " + str(coins) + ".")
+        if play():
+            row, col, coins = reset()
+            victory = False
     else:
         if (col == 1 and row == 2) or (col == 2 and row == 2) or (col == 2 and row == 3) or (col == 3 and row == 2):
             coins = pull_lever(coins)
